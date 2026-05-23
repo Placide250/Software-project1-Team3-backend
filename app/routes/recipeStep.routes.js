@@ -7,7 +7,7 @@ module.exports = (app) => {
   router.post(
     "/recipes/:recipeId/recipeSteps/",
     [authenticateRoute],
-    RecipeStep.create
+    RecipeStep.create,
   );
 
   // Retrieve all Recipe Steps
@@ -19,7 +19,7 @@ module.exports = (app) => {
   // Retrieve all Recipe Steps for a Recipe and include the ingredients
   router.get(
     "/recipes/:recipeId/recipeStepsWithIngredients/",
-    RecipeStep.findAllForRecipeWithIngredients
+    RecipeStep.findAllForRecipeWithIngredients,
   );
 
   // Retrieve a single Recipe Step with id
@@ -29,18 +29,18 @@ module.exports = (app) => {
   router.put(
     "/recipes/:recipeId/recipeSteps/:id",
     [authenticateRoute],
-    RecipeStep.update
+    RecipeStep.update,
   );
 
   // Delete a Recipe Step with id
   router.delete(
     "/recipes/:recipeId/recipeSteps/:id",
     [authenticateRoute],
-    RecipeStep.delete
+    RecipeStep.delete,
   );
 
   // Delete all Recipe Steps
   router.delete("/recipeSteps/", [authenticateRoute], RecipeStep.deleteAll);
 
-  app.use("/recipeapi", router);
+  app.use("/planetapi", router);
 };
