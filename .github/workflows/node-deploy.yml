@@ -48,7 +48,7 @@ jobs:
         env:
           NAME: "Root"
         with:
-          hosts: "ubuntu@${{ secrets.REMOTE_HOST }}"
+          hosts: ""
           privateKey: ${{ secrets.SERVER_SSH_KEY }}
           debug: false
           command: |
