@@ -10,7 +10,7 @@ module.exports = (app) => {
   router.get(
     "/recipes/user/:userId",
     [authenticateRoute],
-    Recipe.findAllForUser
+    Recipe.findAllForUser,
   );
 
   // Retrieve all published Recipes
@@ -28,5 +28,5 @@ module.exports = (app) => {
   // Delete all Recipes
   router.delete("/recipes/", [authenticateRoute], Recipe.deleteAll);
 
-  app.use("/recipeapi", router);
+  app.use("/planetapi", router);
 };
