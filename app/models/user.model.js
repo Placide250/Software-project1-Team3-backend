@@ -1,4 +1,4 @@
-const { saltSize, keySize } = require("../authentication/crypto");
+const { saltSize, keySize } = require("../authentication/crypto.js");
 
 module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define("user", {
