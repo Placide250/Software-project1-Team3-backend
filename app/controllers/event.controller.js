@@ -4,35 +4,34 @@ const Op = db.Sequelize.Op;
 
 // Create and Save a new Event
 exports.create = async (req, res) => {
-  // Validate request
-  if (req.body.name === undefined) {
-    const error = new Error("Name cannot be empty for event!");
-    error.statusCode = 400;
-    throw error;
-  } else if (req.body.description === undefined) {
-    const error = new Error("Description cannot be empty for event!");
-    error.statusCode = 400;
-    throw error;
-  } else if (req.body.price === undefined) {
-    const error = new Error("Price cannot be empty for event!");
-    error.statusCode = 400;
-    throw error;
-  }
-
-  // Create a Event
-  const event = {
-    name: req.body.name,
-    description: req.body.description,
-    price: req.body.price,
-  };
-  // Save Event in the database
   try {
+    // Validate request
+    if (!req.body.name) {
+      const error = new Error("Name cannot be empty for event!");
+      error.statusCode = 400;
+      throw error;
+    } else if (!req.body.description) {
+      const error = new Error("Description cannot be empty for event!");
+      error.statusCode = 400;
+      throw error;
+    } else if (!req.body.price) {
+      const error = new Error("Price cannot be empty for event!");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    // Create a Event
+    const event = {
+      name: req.body.name,
+      description: req.body.description,
+      price: req.body.price,
+    };
+    // Save Event in the database
     const data = await Event.create(event);
     res.send(data);
   } catch (err) {
-    res.status(500).send({
-      message:
-        err.message || "Some error occurred while creating the Event.",
+    res.status(err.statusCode || 500).send({
+      message: err.message || "Some error occurred while creating the Event.",
     });
   }
 };
@@ -49,12 +48,14 @@ exports.findAll = async (req, res) => {
     : null;
 
   try {
-    const data = await Event.findAll({ where: condition, order: [["name", "ASC"]] });
+    const data = await Event.findAll({
+      where: condition,
+      order: [["name", "ASC"]],
+    });
     res.send(data);
   } catch (err) {
     res.status(500).send({
-      message:
-        err.message || "Some error occurred while retrieving events.",
+      message: err.message || "Some error occurred while retrieving events.",
     });
   }
 };
@@ -136,8 +137,7 @@ exports.deleteAll = async (req, res) => {
     res.send({ message: `${number} Events were deleted successfully!` });
   } catch (err) {
     res.status(500).send({
-      message:
-        err.message || "Some error occurred while removing all events.",
+      message: err.message || "Some error occurred while removing all events.",
     });
   }
 };
