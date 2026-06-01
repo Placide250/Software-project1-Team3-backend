@@ -36,6 +36,12 @@ exports.create = async (req, res) => {
     const data = await event.createSlot(slot);
     res.send(data);
   } catch (err) {
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        message: "This action would create a scheduling conflict.",
+      });
+    }
+
     res.status(err.statusCode || 500).send({
       message: err.message || "Some error occurred while creating the slot.",
     });
@@ -136,6 +142,12 @@ exports.createRecurring = async (req, res) => {
     const data = await Slot.bulkCreate(slots);
     res.send(data);
   } catch (err) {
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        message: "This action would create a scheduling conflict.",
+      });
+    }
+
     res.status(err.statusCode || 500).send({
       message:
         err.message || "Some error occurred while creating recurring slots.",
