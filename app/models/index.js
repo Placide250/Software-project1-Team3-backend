@@ -17,6 +17,7 @@ db.sequelize = sequelize;
 db.ingredient = require("./ingredient.model.js")(sequelize, Sequelize);
 db.recipe = require("./recipe.model.js")(sequelize, Sequelize);
 db.event = require("./event.model.js")(sequelize, Sequelize);
+db.slot = require("./slot.model.js")(sequelize, Sequelize);
 db.recipeStep = require("./recipeStep.model.js")(sequelize, Sequelize);
 db.recipeIngredient = require("./recipeIngredient.model.js")(
   sequelize,
@@ -33,6 +34,18 @@ db.user.hasMany(db.session, {
 });
 db.session.belongsTo(db.user, {
   as: "user",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+
+// foreign keys for events
+db.event.hasMany(db.slot, {
+  as: "slots",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+db.slot.belongsTo(db.event, {
+  as: "event",
   foreignKey: { allowNull: false },
   onDelete: "CASCADE",
 });

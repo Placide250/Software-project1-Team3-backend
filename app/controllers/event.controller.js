@@ -1,5 +1,6 @@
 const db = require("../models");
 const Event = db.event;
+const Slot = db.slot;
 const Op = db.Sequelize.Op;
 
 // Create and Save a new Event
@@ -51,6 +52,13 @@ exports.findAll = async (req, res) => {
     const data = await Event.findAll({
       where: condition,
       order: [["name", "ASC"]],
+      include: [
+        {
+          model: Slot,
+          as: "slots",
+          required: false,
+        },
+      ],
     });
     res.send(data);
   } catch (err) {
@@ -66,6 +74,13 @@ exports.findOne = async (req, res) => {
   try {
     const data = await Event.findAll({
       where: { id: id },
+      include: [
+        {
+          model: Slot,
+          as: "slots",
+          required: false,
+        },
+      ],
     });
     if (data) {
       res.send(data);
