@@ -1,5 +1,6 @@
 const db = require("../models");
 const { nthDate, combineDateAndTime } = require("../utils/dateUtils");
+const { httpError } = require("../utils/httpUtils");
 const Slot = db.slot;
 const Event = db.event;
 const Op = db.Sequelize.Op;
