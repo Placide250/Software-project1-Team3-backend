@@ -6,7 +6,6 @@ const Op = db.Sequelize.Op;
 // Create and Save a new Event
 exports.create = async (req, res) => {
   try {
-    // Validate request
     if (!req.body.name) {
       const error = new Error("Name cannot be empty for event!");
       error.statusCode = 400;
@@ -21,13 +20,12 @@ exports.create = async (req, res) => {
       throw error;
     }
 
-    // Create a Event
     const event = {
       name: req.body.name,
       description: req.body.description,
       price: req.body.price,
     };
-    // Save Event in the database
+
     const data = await Event.create(event);
     res.send(data);
   } catch (err) {

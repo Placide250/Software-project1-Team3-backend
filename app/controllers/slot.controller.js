@@ -119,15 +119,15 @@ exports.createRecurring = async (req, res) => {
 
     // Add all the time occurences to the list of dates to get a final list of slots to create
     const slots = [];
-    for (const date of dates) {
+    dates.forEach((date) => {
       if (timeList) {
-        for (const t of timeList) {
+        timeList.forEach((t) => {
           slots.push({
             datetime: combineDateAndTime(date, t),
             seatsAvailable,
             eventId,
           });
-        }
+        });
       } else {
         slots.push({ datetime: new Date(date), seatsAvailable, eventId });
       }
@@ -137,7 +137,7 @@ exports.createRecurring = async (req, res) => {
           400,
         );
       }
-    }
+    });
 
     const data = await Slot.bulkCreate(slots);
     res.send(data);

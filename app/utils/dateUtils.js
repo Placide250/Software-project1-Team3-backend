@@ -13,26 +13,20 @@ export function addMonthsClamped(anchor, months) {
   return d;
 }
 
-// The nth occurrence date, computed from 'start'
 export function nthDate(start, frequency, n) {
   const d = new Date(start);
-  switch (frequency) {
-    case "daily":
-      d.setUTCDate(d.getUTCDate() + n);
-      break;
-    case "weekly":
-      d.setUTCDate(d.getUTCDate() + 7 * n);
-      break;
-    case "biweekly":
-      d.setUTCDate(d.getUTCDate() + 14 * n);
-      break;
-    case "monthly":
-      return addMonthsClamped(start, n);
+  if (frequency === "daily") {
+    d.setUTCDate(d.getUTCDate() + n);
+  } else if (frequency === "weekly") {
+    d.setUTCDate(d.getUTCDate() + 7 * n);
+  } else if (frequency === "biweekly") {
+    d.setUTCDate(d.getUTCDate() + 14 * n);
+  } else if (frequency === "monthly") {
+    return addMonthsClamped(start, n);
   }
   return d;
 }
 
-// Combine a date with a "HH:mm" time, in UTC.
 export function combineDateAndTime(date, timeStr) {
   const [h, m] = timeStr.split(":").map(Number);
   const dt = new Date(date);
