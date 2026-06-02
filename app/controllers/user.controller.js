@@ -25,18 +25,39 @@ exports.create = async (req, res) => {
     throw error;
   }
 
+  // try {
+  //   const data = await User.findOne({
+  //     where: {
+  //       email: req.body.email,
+  //     },
+  //   });
+
+  //   if (data) {
+  //     return res.status(400).send({
+  //       message: "This email is already in use."
+  //     });
+  //   }
+
+    // console.log("email not found");
+
   try {
-    const data = await User.findOne({
-      where: {
-        email: req.body.email,
-      },
+  console.log("BEFORE FINDONE");
+
+  const data = await User.findOne({
+    where: {
+      email: req.body.email,
+    },
+  });
+
+  console.log("AFTER FINDONE");
+  console.log(data);
+
+  if (data) {
+    return res.status(400).send({
+      message: "This email is already in use."
     });
-
-    if (data) {
-      return "This email is already in use.";
-    }
-
-    console.log("email not found");
+  }
+  console.log("email not found");
 
     let salt = await getSalt();
     let hash = await hashPassword(req.body.password, salt);
@@ -49,6 +70,7 @@ exports.create = async (req, res) => {
       email: req.body.email,
       password: hash,
       salt: salt,
+      isAdmin: req.body.isAdmin,
     };
 
     try {
@@ -81,8 +103,15 @@ exports.create = async (req, res) => {
       });
     }
   } catch (err) {
-    return err.message || "Error retrieving User with email=" + req.body.email;
-  }
+  console.log("ERROR IN FINDONE:", err);
+
+  return res.status(500).send({
+    message: err.message || "Error retrieving User with email=" + req.body.email,
+  });
+}
+  // } catch (err) {
+  //   return err.message || "Error retrieving User with email=" + req.body.email;
+  // }
 };
 
 // Retrieve all Users from the database.

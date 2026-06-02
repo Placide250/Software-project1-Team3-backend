@@ -1,4 +1,4 @@
-const { saltSize, keySize } = require("../authentication/crypto");
+const { saltSize, keySize } = require("../authentication/crypto.js");
 
 module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define("user", {
@@ -20,6 +20,10 @@ module.exports = (sequelize, Sequelize) => {
     },
     salt: {
       type: Sequelize.BLOB,
+      allowNull: false,
+    },
+    isAdmin: {
+      type: Sequelize.BOOLEAN,
       allowNull: false,
     },
   });
