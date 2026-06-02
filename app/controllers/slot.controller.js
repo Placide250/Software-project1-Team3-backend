@@ -91,11 +91,12 @@ exports.createRecurring = async (req, res) => {
     if (!times || !Array.isArray(times) || times.length === 0) {
       throw httpError("times must be a non-empty array of HH:mm strings.", 400);
     }
-    for (const t of times) {
+
+    times.forEach((t) => {
       if (!TIME_VALIDATOR.test(t)) {
         throw httpError(`Invalid time "${t}". Use 24-hour HH:mm format.`, 400);
       }
-    }
+    });
     timeList = times;
 
     const event = await Event.findByPk(eventId);
