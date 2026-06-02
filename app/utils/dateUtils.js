@@ -1,7 +1,7 @@
 // Add `months` to a date, clamping to the last valid day (UTC).
 // Solves problem where adding a month to Jan 31 gives Mar 3
 // * used AI for this *
-export function addMonthsClamped(anchor, months) {
+function addMonthsClamped(anchor, months) {
   const targetDay = anchor.getUTCDate();
   const d = new Date(anchor);
   d.setUTCDate(1); // avoid overflow while changing month
@@ -13,7 +13,7 @@ export function addMonthsClamped(anchor, months) {
   return d;
 }
 
-export function nthDate(start, frequency, n) {
+function nthDate(start, frequency, n) {
   const d = new Date(start);
   if (frequency === "daily") {
     d.setUTCDate(d.getUTCDate() + n);
@@ -27,9 +27,15 @@ export function nthDate(start, frequency, n) {
   return d;
 }
 
-export function combineDateAndTime(date, timeStr) {
+function combineDateAndTime(date, timeStr) {
   const [h, m] = timeStr.split(":").map(Number);
   const dt = new Date(date);
   dt.setUTCHours(h, m, 0, 0);
   return dt;
 }
+
+module.exports = {
+  addMonthsClamped,
+  nthDate,
+  combineDateAndTime,
+};
