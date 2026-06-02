@@ -1,11 +1,11 @@
 const db = require("../models");
 const Event = db.event;
+const Slot = db.slot;
 const Op = db.Sequelize.Op;
 
 // Create and Save a new Event
 exports.create = async (req, res) => {
   try {
-    // Validate request
     if (!req.body.name) {
       const error = new Error("Name cannot be empty for event!");
       error.statusCode = 400;
@@ -20,13 +20,12 @@ exports.create = async (req, res) => {
       throw error;
     }
 
-    // Create a Event
     const event = {
       name: req.body.name,
       description: req.body.description,
       price: req.body.price,
     };
-    // Save Event in the database
+
     const data = await Event.create(event);
     res.send(data);
   } catch (err) {
@@ -51,6 +50,13 @@ exports.findAll = async (req, res) => {
     const data = await Event.findAll({
       where: condition,
       order: [["name", "ASC"]],
+      include: [
+        {
+          model: Slot,
+          as: "slots",
+          required: false,
+        },
+      ],
     });
     res.send(data);
   } catch (err) {
@@ -66,6 +72,13 @@ exports.findOne = async (req, res) => {
   try {
     const data = await Event.findAll({
       where: { id: id },
+      include: [
+        {
+          model: Slot,
+          as: "slots",
+          required: false,
+        },
+      ],
     });
     if (data) {
       res.send(data);
