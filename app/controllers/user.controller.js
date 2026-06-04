@@ -55,7 +55,6 @@ exports.create = async (req, res) => {
       isAdmin: req.body.isAdmin,
       password: hash,
       salt: salt,
-      isAdmin: req.body.isAdmin,
     };
 
     try {
