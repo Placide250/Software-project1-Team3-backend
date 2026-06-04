@@ -49,14 +49,12 @@ exports.create = async (req, res) => {
 
     // Create a User
     const user = {
-      id: req.body.id,
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
       isAdmin: req.body.isAdmin,
       password: hash,
       salt: salt,
-      isAdmin: req.body.isAdmin,
     };
 
     try {
