@@ -25,21 +25,6 @@ exports.create = async (req, res) => {
     throw error;
   }
 
-  // try {
-  //   const data = await User.findOne({
-  //     where: {
-  //       email: req.body.email,
-  //     },
-  //   });
-
-  //   if (data) {
-  //     return res.status(400).send({
-  //       message: "This email is already in use."
-  //     });
-  //   }
-
-    // console.log("email not found");
-
   try {
   console.log("BEFORE FINDONE");
 
@@ -64,13 +49,11 @@ exports.create = async (req, res) => {
 
     // Create a User
     const user = {
-      id: req.body.id,
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
       password: hash,
       salt: salt,
-      isAdmin: req.body.isAdmin,
     };
 
     try {
@@ -109,9 +92,6 @@ exports.create = async (req, res) => {
     message: err.message || "Error retrieving User with email=" + req.body.email,
   });
 }
-  // } catch (err) {
-  //   return err.message || "Error retrieving User with email=" + req.body.email;
-  // }
 };
 
 // Retrieve all Users from the database.
