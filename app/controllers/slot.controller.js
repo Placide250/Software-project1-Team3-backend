@@ -229,6 +229,12 @@ exports.update = async (req, res) => {
       });
     }
   } catch (err) {
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        message: "This action would create a scheduling conflict.",
+      });
+    }
+
     res.status(500).send({
       message: err.message || "Error updating slot with id=" + id,
     });
