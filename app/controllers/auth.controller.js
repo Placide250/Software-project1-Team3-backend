@@ -29,12 +29,14 @@ exports.login = async (req, res) => {
         lastName: user.lastName,
         id: user.id,
         token: token,
+        isAdmin: user.isAdmin,
       };
       res.send(userInfo);
     } catch (err) {
       console.error(err);
       res.status(500).send({
-        message: err.message || "Some error occurred while creating the session.",
+        message:
+          err.message || "Some error occurred while creating the session.",
       });
     }
   }

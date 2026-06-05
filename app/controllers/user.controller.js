@@ -26,16 +26,22 @@ exports.create = async (req, res) => {
   }
 
   try {
+    console.log("BEFORE FINDONE");
+
     const data = await User.findOne({
       where: {
         email: req.body.email,
       },
     });
 
-    if (data) {
-      return "This email is already in use.";
-    }
+    console.log("AFTER FINDONE");
+    console.log(data);
 
+    if (data) {
+      return res.status(400).send({
+        message: "This email is already in use.",
+      });
+    }
     console.log("email not found");
 
     let salt = await getSalt();
@@ -47,6 +53,7 @@ exports.create = async (req, res) => {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
+      isAdmin: req.body.isAdmin,
       password: hash,
       salt: salt,
     };
@@ -81,7 +88,12 @@ exports.create = async (req, res) => {
       });
     }
   } catch (err) {
-    return err.message || "Error retrieving User with email=" + req.body.email;
+    console.log("ERROR IN FINDONE:", err);
+
+    return res.status(500).send({
+      message:
+        err.message || "Error retrieving User with email=" + req.body.email,
+    });
   }
 };
 
@@ -203,8 +215,7 @@ exports.deleteAll = async (req, res) => {
     res.send({ message: `${number} People were deleted successfully!` });
   } catch (err) {
     res.status(500).send({
-      message:
-        err.message || "Some error occurred while removing all people.",
+      message: err.message || "Some error occurred while removing all people.",
     });
   }
 };
