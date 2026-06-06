@@ -166,6 +166,13 @@ exports.findAll = async (req, res) => {
     const data = await Slot.findAll({
       where: condition,
       order: [["datetime", "ASC"]],
+      include: [
+        {
+          model: Event,
+          as: "event",
+          required: false,
+        },
+      ],
     });
     res.send(data);
   } catch (err) {
@@ -181,6 +188,13 @@ exports.findOne = async (req, res) => {
   try {
     const data = await Slot.findAll({
       where: { id: id },
+      include: [
+        {
+          model: Event,
+          as: "event",
+          required: false,
+        },
+      ],
     });
     if (data) {
       res.send(data);

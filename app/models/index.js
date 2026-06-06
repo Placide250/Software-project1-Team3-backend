@@ -17,6 +17,9 @@ db.sequelize = sequelize;
 db.ingredient = require("./ingredient.model.js")(sequelize, Sequelize);
 db.recipe = require("./recipe.model.js")(sequelize, Sequelize);
 db.event = require("./event.model.js")(sequelize, Sequelize);
+db.order = require("./order.model.js")(sequelize, Sequelize);
+db.payment = require("./payment.model.js")(sequelize, Sequelize);
+db.ticket = require("./ticket.model.js")(sequelize, Sequelize);
 db.slot = require("./slot.model.js")(sequelize, Sequelize);
 db.recipeStep = require("./recipeStep.model.js")(sequelize, Sequelize);
 db.recipeIngredient = require("./recipeIngredient.model.js")(
@@ -46,6 +49,51 @@ db.event.hasMany(db.slot, {
 });
 db.slot.belongsTo(db.event, {
   as: "event",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+
+// foreign key for order
+db.user.hasMany(db.order, {
+  as: "order",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+db.order.belongsTo(db.user, {
+  as: "user",
+  foreignKey: { allowNull: true },
+  onDelete: "CASCADE",
+});
+db.order.hasOne(db.payment, {
+  as: "payment",
+  foreignKey: { allowNull: true },
+  onDelete: "CASCADE",
+});
+(db,
+  payment.belongsTo(db.order, {
+    as: "order",
+    foreignKey: { allowNull: true },
+    onDelete: "CASCADE",
+  }));
+db.order.hasMany(db.ticket, {
+  as: "tickets",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+db.ticket.belongsTo(db.order, {
+  as: "order",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+
+// foreign key for ticket
+db.ticket.belongsTo(db.slot, {
+  as: "slot",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+db.slot.hasMany(db.ticket, {
+  as: "tickets",
   foreignKey: { allowNull: false },
   onDelete: "CASCADE",
 });
