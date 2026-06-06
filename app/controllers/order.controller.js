@@ -109,7 +109,7 @@ exports.create = async (req, res) => {
           orderId: order.id,
           paymentMethod,
           status: "processing",
-          amount: slot.price * (selectedSeats.length - childCount),
+          amount: event.price * (selectedSeats.length - childCount),
           cardName: isCreditCard ? cardName : null,
           cardNumber: isCreditCard ? cardNumber : null,
           expirationMonth: isCreditCard ? expirationMonth : null,
