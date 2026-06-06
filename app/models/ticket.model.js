@@ -12,6 +12,19 @@ module.exports = (sequelize, Sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      archivedPrice: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        // since we're storing amount in cents
+        get() {
+          const rawValue = this.getDataValue("archivedPrice");
+          return rawValue ? rawValue / 100 : 0;
+        },
+        // since we're storing amount in cents
+        set(value) {
+          this.setDataValue("archivedPrice", Math.round(value * 100));
+        },
+      },
     },
     {
       indexes: [

@@ -97,6 +97,7 @@ exports.create = async (req, res) => {
         isWheelchair: selection.isWheelchair,
         orderId: order.id,
         slotId: slot.id,
+        archivedPrice: event.price,
       }));
       const tickets = await Ticket.bulkCreate(ticketsToReserve, {
         transaction: t,
@@ -170,6 +171,20 @@ exports.findAll = async (req, res) => {
           model: Ticket,
           as: "tickets",
           required: true,
+          include: [
+            {
+              model: Slot,
+              as: "slot",
+              required: true,
+              include: [
+                {
+                  model: Event,
+                  as: "event",
+                  required: true,
+                },
+              ],
+            },
+          ],
         },
       ],
     });
@@ -197,15 +212,30 @@ exports.findOne = async (req, res) => {
           model: User,
           as: "user",
           attributes: ["id", "email", "firstName", "lastName", "isAdmin"],
-          required: true,
+          required: false,
         },
         {
           model: Ticket,
           as: "tickets",
           required: true,
+          include: [
+            {
+              model: Slot,
+              as: "slot",
+              required: true,
+              include: [
+                {
+                  model: Event,
+                  as: "event",
+                  required: true,
+                },
+              ],
+            },
+          ],
         },
       ],
     });
+
     if (data) {
       res.send(data);
     } else {
