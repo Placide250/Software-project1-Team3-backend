@@ -1,8 +1,13 @@
-const { ALLOWED_FREQUENCIES, TIME_VALIDATOR } = require("../config/constants");
+const {
+  ALLOWED_FREQUENCIES,
+  TIME_VALIDATOR,
+  MAX_SLOTS,
+} = require("../config/constants");
 const db = require("../models");
 const { nthDate, combineDateAndTime } = require("../utils/dateUtils");
 const { httpError } = require("../utils/httpUtils");
 const Slot = db.slot;
+const Ticket = db.ticket;
 const Event = db.event;
 const Op = db.Sequelize.Op;
 
@@ -169,6 +174,11 @@ exports.findAll = async (req, res) => {
           as: "event",
           required: false,
         },
+        {
+          model: Ticket,
+          as: "tickets",
+          required: false,
+        },
       ],
     });
     res.send(data);
@@ -189,6 +199,11 @@ exports.findOne = async (req, res) => {
         {
           model: Event,
           as: "event",
+          required: false,
+        },
+        {
+          model: Ticket,
+          as: "tickets",
           required: false,
         },
       ],

@@ -1,5 +1,6 @@
 const db = require("../models");
 const Event = db.event;
+const Ticket = db.ticket;
 const Slot = db.slot;
 const Op = db.Sequelize.Op;
 
@@ -59,6 +60,13 @@ exports.findAll = async (req, res) => {
           model: Slot,
           as: "slots",
           required: false,
+          include: [
+            {
+              model: Ticket,
+              as: "tickets",
+              required: false,
+            },
+          ],
         },
       ],
       order: [[{ model: Slot, as: "slots" }, "datetime", "ASC"]],
@@ -82,6 +90,13 @@ exports.findOne = async (req, res) => {
           model: Slot,
           as: "slots",
           required: false,
+          include: [
+            {
+              model: Ticket,
+              as: "tickets",
+              required: false,
+            },
+          ],
         },
       ],
       order: [[{ model: Slot, as: "slots" }, "datetime", "ASC"]],

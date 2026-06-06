@@ -86,7 +86,7 @@ exports.create = async (req, res) => {
           userId,
           slotId,
           childCount,
-          guestEmail,
+          guestEmail: guestEmail?.trim() ? guestEmail.trim() : null,
         },
         { transaction: t },
       );
