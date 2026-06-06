@@ -18,6 +18,10 @@ exports.create = async (req, res) => {
       const error = new Error("Price cannot be empty for event!");
       error.statusCode = 400;
       throw error;
+    } else if (req.body.price < 0) {
+      const error = new Error("Price cannot be negative for event!");
+      error.statusCode = 400;
+      throw error;
     }
 
     const event = {
@@ -57,6 +61,7 @@ exports.findAll = async (req, res) => {
           required: false,
         },
       ],
+      order: [[{ model: Slot, as: "slots" }, "datetime", "ASC"]],
     });
     res.send(data);
   } catch (err) {
@@ -79,6 +84,7 @@ exports.findOne = async (req, res) => {
           required: false,
         },
       ],
+      order: [[{ model: Slot, as: "slots" }, "datetime", "ASC"]],
     });
     if (data) {
       res.send(data);
@@ -98,6 +104,24 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
   const id = req.params.id;
   try {
+    if (!req.body.name) {
+      const error = new Error("Name cannot be empty for event!");
+      error.statusCode = 400;
+      throw error;
+    } else if (!req.body.description) {
+      const error = new Error("Description cannot be empty for event!");
+      error.statusCode = 400;
+      throw error;
+    } else if (!req.body.price) {
+      const error = new Error("Price cannot be empty for event!");
+      error.statusCode = 400;
+      throw error;
+    } else if (req.body.price < 0) {
+      const error = new Error("Price cannot be negative for event!");
+      error.statusCode = 400;
+      throw error;
+    }
+
     const number = await Event.update(req.body, {
       where: { id: id },
     });

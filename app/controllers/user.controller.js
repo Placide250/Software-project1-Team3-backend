@@ -52,6 +52,7 @@ exports.create = async (req, res) => {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
+      isAdmin: req.body.isAdmin,
       password: hash,
       salt: salt,
     };
@@ -212,8 +213,7 @@ exports.deleteAll = async (req, res) => {
     res.send({ message: `${number} People were deleted successfully!` });
   } catch (err) {
     res.status(500).send({
-      message:
-        err.message || "Some error occurred while removing all people.",
+      message: err.message || "Some error occurred while removing all people.",
     });
   }
 };
