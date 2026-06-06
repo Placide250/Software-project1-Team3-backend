@@ -10,6 +10,10 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       defaultValue: false,
     },
+    guestEmail: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
   });
   return Order;
 };

@@ -1,3 +1,4 @@
+const { ALLOWED_FREQUENCIES, TIME_VALIDATOR } = require("../config/constants");
 const db = require("../models");
 const { nthDate, combineDateAndTime } = require("../utils/dateUtils");
 const { httpError } = require("../utils/httpUtils");
@@ -48,10 +49,6 @@ exports.create = async (req, res) => {
 
 // Create recurring slots for an event
 exports.createRecurring = async (req, res) => {
-  const ALLOWED_FREQUENCIES = ["daily", "weekly", "biweekly", "monthly"];
-  const MAX_SLOTS = 500; // only allow a reasonable number of slots
-  const TIME_VALIDATOR = /^([01]\d|2[0-3]):([0-5]\d)$/; // 24-hour HH:mm regex
-
   try {
     // extract request body and params
     const { frequency, startDate, endDate, times } = req.body;

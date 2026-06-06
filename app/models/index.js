@@ -49,7 +49,7 @@ db.slot.belongsTo(db.event, {
 // foreign key for order
 db.user.hasMany(db.order, {
   as: "order",
-  foreignKey: { allowNull: false },
+  foreignKey: { allowNull: true },
   onDelete: "CASCADE",
 });
 db.order.belongsTo(db.user, {
@@ -59,12 +59,12 @@ db.order.belongsTo(db.user, {
 });
 db.order.hasOne(db.payment, {
   as: "payment",
-  foreignKey: { allowNull: true },
+  foreignKey: { name: "orderId", allowNull: true },
   onDelete: "CASCADE",
 });
 db.payment.belongsTo(db.order, {
   as: "order",
-  foreignKey: { allowNull: true },
+  foreignKey: { name: "orderId", allowNull: true },
   onDelete: "CASCADE",
 });
 db.order.hasMany(db.ticket, {

@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
   const Payment = sequelize.define("payment", {
-    paymentType: {
+    paymentMethod: {
       // type: DataTypes.ENUM("credit_card", "paypal", "google_pay", "apple_pay"),
       type: Sequelize.STRING,
       allowNull: false,
@@ -47,11 +47,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: true,
     },
-    accountEmail: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    token: {
+    thirdPartyPaymentToken: {
       type: Sequelize.STRING,
       allowNull: true,
     },
