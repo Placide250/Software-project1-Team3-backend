@@ -1,17 +1,19 @@
 module.exports = (sequelize, Sequelize) => {
   const Payment = sequelize.define("payment", {
     paymentType: {
-      type: DataTypes.ENUM("credit_card", "paypal", "google_pay", "apple_pay"),
+      // type: DataTypes.ENUM("credit_card", "paypal", "google_pay", "apple_pay"),
+      type: Sequelize.STRING,
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM(
-        "processing",
-        "complete",
-        "failed",
-        "cancelled",
-        "refunded",
-      ),
+      // type: DataTypes.ENUM(
+      //   "processing",
+      //   "complete",
+      //   "failed",
+      //   "cancelled",
+      //   "refunded",
+      // ),
+      type: Sequelize.STRING,
       allowNull: false,
       defaultValue: "processing",
     },

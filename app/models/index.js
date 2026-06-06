@@ -69,12 +69,11 @@ db.order.hasOne(db.payment, {
   foreignKey: { allowNull: true },
   onDelete: "CASCADE",
 });
-(db,
-  payment.belongsTo(db.order, {
-    as: "order",
-    foreignKey: { allowNull: true },
-    onDelete: "CASCADE",
-  }));
+db.payment.belongsTo(db.order, {
+  as: "order",
+  foreignKey: { allowNull: true },
+  onDelete: "CASCADE",
+});
 db.order.hasMany(db.ticket, {
   as: "tickets",
   foreignKey: { allowNull: false },
