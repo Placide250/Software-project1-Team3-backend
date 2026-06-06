@@ -43,6 +43,7 @@ exports.create = async (req, res) => {
     isPublished: req.body.isPublished ? req.body.isPublished : false,
     userId: req.body.userId,
   };
+
   // Save Recipe in the database
   try {
     const data = await Recipe.create(recipe);

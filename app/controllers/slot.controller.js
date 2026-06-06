@@ -1,6 +1,7 @@
 const db = require("../models");
 const { nthDate, combineDateAndTime } = require("../utils/dateUtils");
 const { httpError } = require("../utils/httpUtils");
+const emailService = require("../utils/email.service");
 const Slot = db.slot;
 const Event = db.event;
 const Op = db.Sequelize.Op;
@@ -35,6 +36,27 @@ exports.create = async (req, res) => {
     };
 
     const data = await event.createSlot(slot);
+
+    // Send confirmation email if userEmail is provided
+    if (req.body.userEmail) {
+      try {
+        await emailService.sendConfirmationEmail(
+          req.body.userEmail,
+          req.body.userName || "Customer",
+          {
+            name: event.name,
+            description: event.description,
+            datetime: datetime.toLocaleString(),
+            seats: req.body.seatsAvailable,
+            price: event.price,
+          }
+        );
+      } catch (emailErr) {
+        // Email failure must never cancel a successful booking
+        console.error("Confirmation email failed:", emailErr.message);
+      }
+    }
+
     res.send(data);
   } catch (err) {
     if (err.name === "SequelizeUniqueConstraintError") {
@@ -52,15 +74,13 @@ exports.create = async (req, res) => {
 // Create recurring slots for an event
 exports.createRecurring = async (req, res) => {
   const ALLOWED_FREQUENCIES = ["daily", "weekly", "biweekly", "monthly"];
-  const MAX_SLOTS = 500; // only allow a reasonable number of slots
-  const TIME_VALIDATOR = /^([01]\d|2[0-3]):([0-5]\d)$/; // 24-hour HH:mm regex
+  const MAX_SLOTS = 500;
+  const TIME_VALIDATOR = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
   try {
-    // extract request body and params
     const { frequency, startDate, endDate, seatsAvailable, times } = req.body;
     const eventId = req.params.eventId;
 
-    // a whole lotta validation
     if (!frequency) {
       throw httpError("Frequency cannot be empty for recurring slots!", 400);
     } else if (!ALLOWED_FREQUENCIES.includes(frequency)) {
@@ -105,7 +125,6 @@ exports.createRecurring = async (req, res) => {
       throw httpError("Event not found!", 404);
     }
 
-    // Generate the list of dates we want to create slots on
     const dates = [];
     for (let n = 0; true; n++) {
       const d = nthDate(start, frequency, n);
@@ -119,7 +138,6 @@ exports.createRecurring = async (req, res) => {
       }
     }
 
-    // Add all the time occurences to the list of dates to get a final list of slots to create
     const slots = [];
     dates.forEach((date) => {
       if (timeList) {
