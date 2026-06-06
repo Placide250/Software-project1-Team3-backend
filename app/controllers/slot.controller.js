@@ -7,7 +7,9 @@ const db = require("../models");
 const { nthDate, combineDateAndTime } = require("../utils/dateUtils");
 const { httpError } = require("../utils/httpUtils");
 const Slot = db.slot;
+const Order = db.order;
 const Ticket = db.ticket;
+const User = db.user;
 const Event = db.event;
 const Op = db.Sequelize.Op;
 
@@ -178,6 +180,20 @@ exports.findAll = async (req, res) => {
           model: Ticket,
           as: "tickets",
           required: false,
+          include: [
+            {
+              model: Order,
+              as: "order",
+              required: false,
+              include: [
+                {
+                  model: User,
+                  as: "user",
+                  required: false,
+                },
+              ],
+            },
+          ],
         },
       ],
     });
@@ -205,6 +221,20 @@ exports.findOne = async (req, res) => {
           model: Ticket,
           as: "tickets",
           required: false,
+          include: [
+            {
+              model: Order,
+              as: "order",
+              required: false,
+              include: [
+                {
+                  model: User,
+                  as: "user",
+                  required: false,
+                },
+              ],
+            },
+          ],
         },
       ],
     });
