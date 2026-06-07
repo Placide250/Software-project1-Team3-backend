@@ -5,10 +5,6 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       unique: true,
     },
-    seatsAvailable: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-    },
   });
   return Slot;
 };

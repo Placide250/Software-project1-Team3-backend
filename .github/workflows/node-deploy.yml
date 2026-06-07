@@ -54,8 +54,10 @@ jobs:
           debug: false
           command: |
             cd nodeapps/planetarium-backend
-            npm install
+            npm ci || { echo "npm ci failed"; exit 1; }
             sudo systemctl stop planetarium-backend
             sudo cp planetarium-backend.service /lib/systemd/system/planetarium-backend.service
             sudo systemctl daemon-reload
             sudo systemctl start planetarium-backend
+            sleep 3
+            sudo systemctl status planetarium-backend

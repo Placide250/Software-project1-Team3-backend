@@ -11,6 +11,15 @@ module.exports = (sequelize, Sequelize) => {
     price: {
       type: Sequelize.INTEGER,
       allowNull: false,
+      // since we're storing price in cents
+      get() {
+        const rawValue = this.getDataValue("price");
+        return rawValue ? rawValue / 100 : 0;
+      },
+      // since we're storing price in cents
+      set(value) {
+        this.setDataValue("price", Math.round(value * 100));
+      },
     },
   });
   return Event;
