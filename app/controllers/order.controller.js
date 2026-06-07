@@ -229,6 +229,12 @@ exports.findOne = async (req, res) => {
                   as: "event",
                   required: true,
                 },
+                {
+                  model: Ticket,
+                  as: "tickets",
+                  required: false,
+                  separate: true,
+                },
               ],
             },
           ],
