@@ -1,7 +1,6 @@
 const db = require("../models");
 const { nthDate, combineDateAndTime } = require("../utils/dateUtils");
 const { httpError } = require("../utils/httpUtils");
-const emailService = require("../utils/email.service");
 const Slot = db.slot;
 const Event = db.event;
 const Op = db.Sequelize.Op;
@@ -36,27 +35,6 @@ exports.create = async (req, res) => {
     };
 
     const data = await event.createSlot(slot);
-
-    // Send confirmation email if userEmail is provided
-    if (req.body.userEmail) {
-      try {
-        await emailService.sendConfirmationEmail(
-          req.body.userEmail,
-          req.body.userName || "Customer",
-          {
-            name: event.name,
-            description: event.description,
-            datetime: datetime.toLocaleString(),
-            seats: req.body.seatsAvailable,
-            price: event.price,
-          }
-        );
-      } catch (emailErr) {
-        // Email failure must never cancel a successful booking
-        console.error("Confirmation email failed:", emailErr.message);
-      }
-    }
-
     res.send(data);
   } catch (err) {
     if (err.name === "SequelizeUniqueConstraintError") {
