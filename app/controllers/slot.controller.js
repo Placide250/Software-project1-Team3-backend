@@ -10,8 +10,6 @@ exports.create = async (req, res) => {
   try {
     if (!req.body.datetime) {
       throw httpError("Datetime cannot be empty for slot!", 400);
-    } else if (!req.body.seatsAvailable) {
-      throw httpError("Seats Available cannot be empty for slot!", 400);
     }
 
     const eventId = req.params.eventId;
@@ -31,7 +29,6 @@ exports.create = async (req, res) => {
 
     const slot = {
       datetime: new Date(req.body.datetime),
-      seatsAvailable: req.body.seatsAvailable,
     };
 
     const data = await event.createSlot(slot);
@@ -56,7 +53,8 @@ exports.createRecurring = async (req, res) => {
   const TIME_VALIDATOR = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
   try {
-    const { frequency, startDate, endDate, seatsAvailable, times } = req.body;
+    // extract request body and params
+    const { frequency, startDate, endDate, times } = req.body;
     const eventId = req.params.eventId;
 
     if (!frequency) {
@@ -70,8 +68,6 @@ exports.createRecurring = async (req, res) => {
       throw httpError("startDate cannot be empty for recurring slots!", 400);
     } else if (!endDate) {
       throw httpError("endDate cannot be empty for recurring slots!", 400);
-    } else if (!seatsAvailable || seatsAvailable < 1) {
-      throw httpError("Seats Available cannot be empty for slot!", 400);
     } else if (!eventId) {
       throw httpError("Event id cannot be empty for slot!", 400);
     }
@@ -122,12 +118,11 @@ exports.createRecurring = async (req, res) => {
         timeList.forEach((t) => {
           slots.push({
             datetime: combineDateAndTime(date, t),
-            seatsAvailable,
             eventId,
           });
         });
       } else {
-        slots.push({ datetime: new Date(date), seatsAvailable, eventId });
+        slots.push({ datetime: new Date(date), eventId });
       }
       if (slots.length > MAX_SLOTS) {
         throw httpError(
@@ -231,6 +226,12 @@ exports.update = async (req, res) => {
       });
     }
   } catch (err) {
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        message: "This action would create a scheduling conflict.",
+      });
+    }
+
     res.status(500).send({
       message: err.message || "Error updating slot with id=" + id,
     });
