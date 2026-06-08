@@ -1,10 +1,14 @@
 module.exports = (app) => {
   const qr = require("../controllers/qr.controller");
 
-  app.post("/api/qr/generate", qr.generateQR);
+  const router = require("express").Router();
 
-  app.get(
-    "/api/qr/generate/:uuid",
+  router.post("/qr/generate", qr.generateQR);
+
+  router.get(
+    "/qr/generate/:uuid",
     qr.generateTicketQR
   );
+
+  app.use("/planetapi", router);
 };
