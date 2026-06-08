@@ -21,6 +21,11 @@ module.exports = (sequelize, Sequelize) => {
         this.setDataValue("price", Math.round(value * 100));
       },
     },
+    isCancelled: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   });
   return Event;
 };
