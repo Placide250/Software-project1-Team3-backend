@@ -29,6 +29,7 @@
     "mysql2": "^3.2.3",
     "nodemailer": "^8.0.10",
     "parse": "^4.0.1",
+    "qrcode": "^1.5.4",
     "sequelize": "^6.19.0",
     "supertest": "^6.3.3"
   }
