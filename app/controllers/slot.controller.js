@@ -205,6 +205,33 @@ exports.findAll = async (req, res) => {
   }
 };
 
+
+// Retrieve all slots for today
+exports.findAllByDate = async (req, res) => {
+  //today
+  const date = new Date(req.params.date);
+  const startDay = date.setHours(24, 0, 0, 0);
+  //5 am today
+  const endDay = date.setHours(23, 59, 59, 999);
+  //5am next day
+  try {
+    const data = await Slot.findAll({
+      where: { 
+        datetime: {
+          [Op.gt]: startDay,
+          [Op.lt]: endDay,
+        },
+    },
+    });
+    res.send(data);
+  } catch (err) {
+    res.status(500).send({
+      message:
+        err.message || "Error retrieving slots for time=" + startDay + " to " + endDay,
+    });
+  }
+};
+
 // Find a single slots with an id
 exports.findOne = async (req, res) => {
   const id = req.params.id;
