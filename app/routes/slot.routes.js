@@ -9,6 +9,9 @@ module.exports = (app) => {
   // Retrieve all slots
   router.get("/slots", Slot.findAll);
 
+  // Retrieve all slots for today
+  router.get("/slots/day/:date", Slot.findAllByDate);
+
   // Retrieve all slots for a specific event
   router.get("/events/:eventId/slots", Slot.findAllByEvent);
 

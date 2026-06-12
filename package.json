@@ -28,6 +28,7 @@
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.2.3",
     "parse": "^4.0.1",
+    "qrcode": "^1.5.4",
     "sequelize": "^6.19.0",
     "supertest": "^6.3.3"
   }
