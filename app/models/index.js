@@ -21,6 +21,7 @@ db.ticket = require("./ticket.model.js")(sequelize, Sequelize);
 db.slot = require("./slot.model.js")(sequelize, Sequelize);
 db.session = require("./session.model.js")(sequelize, Sequelize);
 db.user = require("./user.model.js")(sequelize, Sequelize);
+db.waitlist = require("./waitlist.model.js")(sequelize, Sequelize);
 
 // foreign key for session
 db.user.hasMany(db.session, {
@@ -87,6 +88,28 @@ db.ticket.belongsTo(db.slot, {
 db.slot.hasMany(db.ticket, {
   as: "tickets",
   foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+
+// foreign keys for waitlist
+db.slot.hasMany(db.waitlist, {
+  as: "waitlist",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+db.waitlist.belongsTo(db.slot, {
+  as: "slot",
+  foreignKey: { allowNull: false },
+  onDelete: "CASCADE",
+});
+db.user.hasMany(db.waitlist, {
+  as: "waitlist",
+  foreignKey: { allowNull: true },
+  onDelete: "CASCADE",
+});
+db.waitlist.belongsTo(db.user, {
+  as: "user",
+  foreignKey: { allowNull: true },
   onDelete: "CASCADE",
 });
 
