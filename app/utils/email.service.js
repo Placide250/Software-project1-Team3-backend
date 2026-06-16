@@ -2,26 +2,24 @@ const nodemailer = require("nodemailer");
 
 // Configure transporter using .env credentials
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT || 587,
-  secure: false,
+  service: "gmail",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
 /**
  * Send a booking confirmation email to the customer.
- * @param {string} toEmail  - recipient email address
- * @param {string} toName   - recipient display name
- * @param {object} booking  - the saved booking record from the DB
+ * @param {string} toEmail     - recipient email address
+ * @param {string} toName      - recipient display name
+ * @param {object} booking     - booking details
  */
 exports.sendConfirmationEmail = async (toEmail, toName, booking) => {
   const mailOptions = {
-    from: `"Planetarium" <${process.env.SMTP_USER}>`,
+    from: `"OC Planetarium" <${process.env.EMAIL_USER}>`,
     to: toEmail,
-    subject: `Booking confirmed: ${booking.name}`,
+    subject: `Booking Confirmed: ${booking.eventName}`,
     html: buildHtml(toName, booking),
   };
 
@@ -31,22 +29,37 @@ exports.sendConfirmationEmail = async (toEmail, toName, booking) => {
 };
 
 function buildHtml(name, booking) {
+  const seatList = booking.seats.map((s) => s.seat).join(", ");
+  const formattedDate = new Date(booking.slotDatetime).toLocaleString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const total = (booking.totalAmount / 100).toFixed(2);
+
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #1a1a2e;">Hi ${name}, your booking is confirmed!</h2>
-      <hr style="border: 0.5px solid #eee;" />
-      <p><strong>Booking:</strong> ${booking.name}</p>
-      <p><strong>Description:</strong> ${booking.description || "N/A"}</p>
-      <p><strong>Date:</strong> ${new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })}</p>
-      <hr style="border: 0.5px solid #eee;" />
-      <p style="color: #666; font-size: 13px;">
-        Please keep this email as your proof of purchase.<br/>
-        Thank you for booking with Planetarium!
-      </p>
+      <div style="background-color: #7B1E2E; padding: 24px; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">OC Planetarium</h1>
+      </div>
+      <div style="padding: 24px; border: 1px solid #eee; border-top: none; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #1a1a2e;">Hi ${name}, your booking is confirmed! 🎉</h2>
+        <hr style="border: 0.5px solid #eee;" />
+        <p><strong>Event:</strong> ${booking.eventName}</p>
+        <p><strong>Date & Time:</strong> ${formattedDate}</p>
+        <p><strong>Seats:</strong> ${seatList}</p>
+        <p><strong>Order ID:</strong> #${booking.orderId}</p>
+        <p><strong>Total Paid:</strong> $${total}</p>
+        <hr style="border: 0.5px solid #eee;" />
+        <p style="color: #666; font-size: 13px;">
+          Please keep this email as your proof of purchase.<br/>
+          We look forward to seeing you at the planetarium!
+        </p>
+        <p style="color: #666; font-size: 13px;"><em>OC Planetarium Team</em></p>
+      </div>
     </div>
   `;
 }

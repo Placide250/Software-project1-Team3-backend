@@ -1,3 +1,4 @@
+const { sendConfirmationEmail } = require("../utils/email.service.js");
 const { authenticate } = require("../authentication/authentication");
 const { PAYMENT_METHODS, STANDARD_SEAT_COUNT } = require("../config/constants");
 const db = require("../models");
@@ -121,7 +122,21 @@ exports.create = async (req, res) => {
       );
 
       // send confirmation email
-      // TODO: send email
+      try {
+        const emailTo = guestEmail?.trim() || (userId ? (await User.findByPk(userId))?.email : null);
+        const emailName = userId ? (await User.findByPk(userId))?.firstName || "Guest" : "Guest";
+        if (emailTo) {
+          await sendConfirmationEmail(emailTo, emailName, {
+            eventName: event.name,
+            slotDatetime: slot.datetime,
+            seats: tickets,
+            totalAmount: payment.amount,
+            orderId: order.id,
+          });
+        }
+      } catch (emailErr) {
+        console.error("Email sending failed (non-fatal):", emailErr.message);
+      }
       // TODO: create QR codes for each ticket
 
       return { order, tickets, payment };
