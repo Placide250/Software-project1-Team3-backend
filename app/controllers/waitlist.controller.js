@@ -1,29 +1,30 @@
 const db = require("../models");
 const { httpError } = require("../utils/httpUtils");
 const Waitlist = db.waitlist;
+const Slot = db.slot;
 const Event = db.event;
 const User = db.user;
 
-// Add user to waitlist for an event
+// Add user to waitlist for a timeslot
 exports.create = async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, userId, eventId } = req.body;
+    const { firstName, lastName, email, phone, userId, slotId } = req.body;
 
     if (!firstName) throw httpError("First name cannot be empty!", 400);
     if (!lastName) throw httpError("Last name cannot be empty!", 400);
     if (!email) throw httpError("Email cannot be empty!", 400);
-    if (!eventId) throw httpError("Event ID cannot be empty!", 400);
+    if (!slotId) throw httpError("Slot ID cannot be empty!", 400);
 
-    const event = await Event.findByPk(eventId);
-    if (!event) throw httpError("Event not found!", 404);
+    const slot = await Slot.findByPk(slotId);
+    if (!slot) throw httpError("Timeslot not found!", 404);
 
-    // Check if user is already on the waitlist for this event
+    // Check if user is already on the waitlist for this slot
     if (userId) {
       const existing = await Waitlist.findOne({
-        where: { userId, eventId },
+        where: { userId, slotId },
       });
       if (existing) {
-        throw httpError("You are already on the waitlist for this event!", 409);
+        throw httpError("You are already on the waitlist for this timeslot!", 409);
       }
     }
 
@@ -33,7 +34,7 @@ exports.create = async (req, res) => {
       email,
       phone: phone || null,
       userId: userId || null,
-      eventId,
+      slotId,
     });
 
     res.status(201).send(entry);
@@ -44,12 +45,12 @@ exports.create = async (req, res) => {
   }
 };
 
-// Get all waitlist entries for a specific event
-exports.findByEvent = async (req, res) => {
-  const eventId = req.params.eventId;
+// Get all waitlist entries for a specific timeslot
+exports.findBySlot = async (req, res) => {
+  const slotId = req.params.slotId;
   try {
     const data = await Waitlist.findAll({
-      where: { eventId },
+      where: { slotId },
       include: [
         {
           model: User,
@@ -65,7 +66,7 @@ exports.findByEvent = async (req, res) => {
     res.status(500).send({
       message:
         err.message ||
-        "Error retrieving waitlist for event with id=" + eventId,
+        "Error retrieving waitlist for slot with id=" + slotId,
     });
   }
 };
@@ -78,9 +79,16 @@ exports.findByUser = async (req, res) => {
       where: { userId },
       include: [
         {
-          model: Event,
-          as: "event",
+          model: Slot,
+          as: "slot",
           required: false,
+          include: [
+            {
+              model: Event,
+              as: "event",
+              required: false,
+            },
+          ],
         },
       ],
       order: [["createdAt", "ASC"]],

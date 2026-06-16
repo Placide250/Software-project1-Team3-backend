@@ -92,13 +92,13 @@ db.slot.hasMany(db.ticket, {
 });
 
 // foreign keys for waitlist
-db.event.hasMany(db.waitlist, {
+db.slot.hasMany(db.waitlist, {
   as: "waitlist",
   foreignKey: { allowNull: false },
   onDelete: "CASCADE",
 });
-db.waitlist.belongsTo(db.event, {
-  as: "event",
+db.waitlist.belongsTo(db.slot, {
+  as: "slot",
   foreignKey: { allowNull: false },
   onDelete: "CASCADE",
 });
