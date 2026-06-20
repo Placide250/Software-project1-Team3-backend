@@ -6,6 +6,7 @@ const cors = require("cors");
 const app = express();
 
 const db = require("./app/models");
+const path = require("path");
 
 const startServer = async () => {
   try {
@@ -35,6 +36,8 @@ app.use(express.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // simple route
 app.get("/", (req, res) => {
