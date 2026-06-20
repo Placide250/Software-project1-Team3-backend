@@ -21,6 +21,10 @@ module.exports = (sequelize, Sequelize) => {
         this.setDataValue("price", Math.round(value * 100));
       },
     },
+    logo: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
     isCancelled: {
       type: Sequelize.BOOLEAN,
       allowNull: false,

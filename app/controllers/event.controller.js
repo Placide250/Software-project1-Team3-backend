@@ -193,3 +193,45 @@ exports.deleteAll = async (req, res) => {
     });
   }
 };
+
+exports.uploadLogo = async (req, res) => {
+  try {
+    const id = Number(req.params.id); // IMPORTANT FIX
+    console.log("HEADERS:", req.headers);
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+
+    console.log("UPLOAD HIT:", id);
+    console.log("FILE:", req.file);
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "No file uploaded",
+      });
+    }
+
+    const logoPath = `/uploads/${req.file.filename}`;
+
+    const event = await Event.findByPk(id);
+
+    if (!event) {
+      return res.status(404).json({
+        message: "Event not found",
+      });
+    }
+
+    await event.update({ logo: logoPath });
+
+    return res.json({
+      message: "Logo uploaded successfully",
+      logo: logoPath,
+    });
+
+  } catch (err) {
+    console.log("UPLOAD ERROR:", err);
+
+    return res.status(500).json({
+      message: err.message || "Upload failed",
+    });
+  }
+};
