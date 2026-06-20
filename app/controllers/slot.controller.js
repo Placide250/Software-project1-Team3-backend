@@ -210,7 +210,7 @@ exports.findAll = async (req, res) => {
 exports.findAllByDate = async (req, res) => {
   //today
   const date = new Date(req.params.date);
-  const startDay = date.setHours(24, 0, 0, 0);
+  const startDay = date.setHours(0, 0, 0, 0);
   //5 am today
   const endDay = date.setHours(23, 59, 59, 999);
   //5am next day
