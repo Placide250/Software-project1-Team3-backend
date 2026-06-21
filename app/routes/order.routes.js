@@ -12,6 +12,9 @@ module.exports = (app) => {
   // Retrieve all Orders
   router.get("/orders/", Order.findAll);
 
+  // Cancel an Order
+  router.put("/orders/:id/cancel", Order.cancel);
+
   // Delete a Order with id
   router.delete("/orders/:id", Order.delete);
 

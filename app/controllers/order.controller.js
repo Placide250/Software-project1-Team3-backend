@@ -1,3 +1,4 @@
+const { sendConfirmationEmail } = require("../utils/email.service.js");
 const { authenticate } = require("../authentication/authentication");
 const { PAYMENT_METHODS, STANDARD_SEAT_COUNT } = require("../config/constants");
 const db = require("../models");
@@ -121,7 +122,21 @@ exports.create = async (req, res) => {
       );
 
       // send confirmation email
-      // TODO: send email
+      try {
+        const emailTo = guestEmail?.trim() || (userId ? (await User.findByPk(userId))?.email : null);
+        const emailName = userId ? (await User.findByPk(userId))?.firstName || "Guest" : "Guest";
+        if (emailTo) {
+          await sendConfirmationEmail(emailTo, emailName, {
+            eventName: event.name,
+            slotDatetime: slot.datetime,
+            seats: tickets,
+            totalAmount: payment.amount,
+            orderId: order.id,
+          });
+        }
+      } catch (emailErr) {
+        console.error("Email sending failed (non-fatal):", emailErr.message);
+      }
       // TODO: create QR codes for each ticket
 
       return { order, tickets, payment };
@@ -143,13 +158,18 @@ exports.create = async (req, res) => {
 // Retrieve all Orders from the database.
 exports.findAll = async (req, res) => {
   const orderId = req.query.orderId;
-  var condition = orderId
-    ? {
-        id: {
-          [Op.like]: `%${orderId}%`,
-        },
-      }
-    : null;
+  const userId = req.query.userId;
+
+  var condition = {};
+  if (orderId) {
+    condition.id = { [Op.like]: `%${orderId}%` };
+  }
+  if (userId) {
+    condition.userId = userId;
+  }
+  if (Object.keys(condition).length === 0) {
+    condition = null;
+  }
 
   try {
     const data = await Order.findAll({
@@ -252,6 +272,53 @@ exports.findOne = async (req, res) => {
   } catch (err) {
     res.status(500).send({
       message: err.message || "Error retrieving Order with id=" + id,
+    });
+  }
+};
+
+// Cancel an Order (soft delete via isCancelled flag)
+exports.cancel = async (req, res) => {
+  const id = req.params.id;
+  let { userId } = await authenticate(req, res, (require = false));
+
+  try {
+    const order = await Order.findByPk(id);
+
+    if (!order) {
+      return res.status(404).send({
+        message: `Cannot find Order with id=${id}.`,
+      });
+    }
+
+    let isAdmin = false;
+    if (userId) {
+      const requester = await User.findByPk(userId);
+      isAdmin = requester?.isAdmin || false;
+    }
+
+    // only the order's owner or an admin can cancel it
+    if (!isAdmin && order.userId !== userId) {
+      return res.status(403).send({
+        message: "You are not authorized to cancel this order.",
+      });
+    }
+
+    if (order.isCancelled) {
+      return res.status(409).send({
+        message: "This order has already been cancelled.",
+      });
+    }
+
+    order.isCancelled = true;
+    await order.save();
+
+    res.send({
+      message: "Order was cancelled successfully!",
+      order,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Could not cancel Order with id=" + id,
     });
   }
 };
