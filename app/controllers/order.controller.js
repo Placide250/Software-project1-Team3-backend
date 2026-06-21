@@ -158,13 +158,18 @@ exports.create = async (req, res) => {
 // Retrieve all Orders from the database.
 exports.findAll = async (req, res) => {
   const orderId = req.query.orderId;
-  var condition = orderId
-    ? {
-        id: {
-          [Op.like]: `%${orderId}%`,
-        },
-      }
-    : null;
+  const userId = req.query.userId;
+
+  var condition = {};
+  if (orderId) {
+    condition.id = { [Op.like]: `%${orderId}%` };
+  }
+  if (userId) {
+    condition.userId = userId;
+  }
+  if (Object.keys(condition).length === 0) {
+    condition = null;
+  }
 
   try {
     const data = await Order.findAll({
@@ -267,6 +272,53 @@ exports.findOne = async (req, res) => {
   } catch (err) {
     res.status(500).send({
       message: err.message || "Error retrieving Order with id=" + id,
+    });
+  }
+};
+
+// Cancel an Order (soft delete via isCancelled flag)
+exports.cancel = async (req, res) => {
+  const id = req.params.id;
+  let { userId } = await authenticate(req, res, (require = false));
+
+  try {
+    const order = await Order.findByPk(id);
+
+    if (!order) {
+      return res.status(404).send({
+        message: `Cannot find Order with id=${id}.`,
+      });
+    }
+
+    let isAdmin = false;
+    if (userId) {
+      const requester = await User.findByPk(userId);
+      isAdmin = requester?.isAdmin || false;
+    }
+
+    // only the order's owner or an admin can cancel it
+    if (!isAdmin && order.userId !== userId) {
+      return res.status(403).send({
+        message: "You are not authorized to cancel this order.",
+      });
+    }
+
+    if (order.isCancelled) {
+      return res.status(409).send({
+        message: "This order has already been cancelled.",
+      });
+    }
+
+    order.isCancelled = true;
+    await order.save();
+
+    res.send({
+      message: "Order was cancelled successfully!",
+      order,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Could not cancel Order with id=" + id,
     });
   }
 };
