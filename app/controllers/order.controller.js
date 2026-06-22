@@ -211,6 +211,180 @@ exports.findAll = async (req, res) => {
   }
 };
 
+// Retrieve all Orders for the current user
+exports.findAllByCurrentUser = async (req, res) => {
+  const { userId } = await authenticate(req, res, (require = true));
+  if (!userId) return;
+
+  var condition = userId
+    ? {
+        userId: {
+          [Op.like]: `%${userId}%`,
+        },
+      }
+    : null;
+
+  try {
+    const data = await Order.findAll({
+      where: condition,
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: Payment,
+          as: "payment",
+          required: true,
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "email", "firstName", "lastName", "isAdmin"],
+          required: false,
+        },
+        {
+          model: Ticket,
+          as: "tickets",
+          required: true,
+          include: [
+            {
+              model: Slot,
+              as: "slot",
+              required: true,
+              include: [
+                {
+                  model: Event,
+                  as: "event",
+                  required: true,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    res.send(data);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while retrieving orders.",
+    });
+  }
+};
+
+// Retrieve all Orders for a specific user
+exports.findAllByUser = async (req, res) => {
+  const userId = req.params.userId;
+  var condition = userId
+    ? {
+        userId: {
+          [Op.like]: `%${userId}%`,
+        },
+      }
+    : null;
+
+  try {
+    const data = await Order.findAll({
+      where: condition,
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: Payment,
+          as: "payment",
+          required: true,
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "email", "firstName", "lastName", "isAdmin"],
+          required: false,
+        },
+        {
+          model: Ticket,
+          as: "tickets",
+          required: true,
+          include: [
+            {
+              model: Slot,
+              as: "slot",
+              required: true,
+              include: [
+                {
+                  model: Event,
+                  as: "event",
+                  required: true,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    res.send(data);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while retrieving orders.",
+    });
+  }
+};
+
+// Find all orders for the given email (user or guestEmail)
+exports.findAllByEmail = async (req, res) => {
+  const email = req.query.email;
+
+  try {
+    const matchedUser = email ? await User.findOne({ where: { email } }) : null;
+
+    const condition = email
+      ? {
+          [Op.or]: [
+            { guestEmail: email },
+            ...(matchedUser ? [{ userId: matchedUser.id }] : []),
+          ],
+        }
+      : null;
+
+    const data = await Order.findAll({
+      where: condition,
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: Payment,
+          as: "payment",
+          required: true,
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "email", "firstName", "lastName", "isAdmin"],
+          required: false,
+        },
+        {
+          model: Ticket,
+          as: "tickets",
+          required: true,
+          include: [
+            {
+              model: Slot,
+              as: "slot",
+              required: true,
+              include: [
+                {
+                  model: Event,
+                  as: "event",
+                  required: true,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    res.send(data);
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while retrieving orders.",
+    });
+  }
+};
+
 // Find a single Order with an id
 exports.findOne = async (req, res) => {
   const id = req.params.id;
