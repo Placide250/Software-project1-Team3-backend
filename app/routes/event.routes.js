@@ -2,6 +2,7 @@ module.exports = (app) => {
   const Event = require("../controllers/event.controller.js");
   const { authenticateRoute } = require("../authentication/authentication");
   var router = require("express").Router();
+  const upload = require("../middleware/upload");
 
   // Create a new Event
   router.post("/events/", Event.create);
@@ -14,6 +15,12 @@ module.exports = (app) => {
 
   // Update a Event with id
   router.put("/events/:id", Event.update);
+
+  router.post(
+    "/events/:id/logo",
+    upload.single("logo"),
+    Event.uploadLogo
+  );
 
   // Delete a Event with id
   router.delete("/events/:id", Event.delete);
