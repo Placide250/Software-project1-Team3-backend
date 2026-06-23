@@ -16,6 +16,12 @@ jobs:
       DB_USER: ${{ secrets.AWS_DB_USER }}
       DB_NAME: ${{ secrets.AWS_DB_NAME }}
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      EMAIL_USER: ${{ secrets.EMAIL_USER }}
+      EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
 
     steps:
       - uses: actions/checkout@v2
@@ -31,6 +37,12 @@ jobs:
             printf "DB_USER='%s'\n" "$DB_USER"
             printf "DB_NAME='%s'\n" "$DB_NAME"
             printf "SECRET_KEY='%s'\n" "$SECRET_KEY"
+            printf "SMTP_HOST='%s'\n" "$SMTP_HOST"
+            printf "SMTP_PORT='%s'\n" "$SMTP_PORT"
+            printf "SMTP_USER='%s'\n" "$SMTP_USER"
+            printf "SMTP_PASS='%s'\n" "$SMTP_PASS"
+            printf "EMAIL_USER='%s'\n" "$EMAIL_USER"
+            printf "EMAIL_PASS='%s'\n" "$EMAIL_PASS"
           } > .env
 
       - run: npm run bundle
