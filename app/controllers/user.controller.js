@@ -26,23 +26,23 @@ exports.create = async (req, res) => {
   }
 
   try {
-  console.log("BEFORE FINDONE");
+    console.log("BEFORE FINDONE");
 
-  const data = await User.findOne({
-    where: {
-      email: req.body.email,
-    },
-  });
-
-  console.log("AFTER FINDONE");
-  console.log(data);
-
-  if (data) {
-    return res.status(400).send({
-      message: "This email is already in use."
+    const data = await User.findOne({
+      where: {
+        email: req.body.email,
+      },
     });
-  }
-  console.log("email not found");
+
+    console.log("AFTER FINDONE");
+    console.log(data);
+
+    if (data) {
+      return res.status(400).send({
+        message: "This email is already in use.",
+      });
+    }
+    console.log("email not found");
 
     let salt = await getSalt();
     let hash = await hashPassword(req.body.password, salt);
@@ -87,12 +87,13 @@ exports.create = async (req, res) => {
       });
     }
   } catch (err) {
-  console.log("ERROR IN FINDONE:", err);
+    console.log("ERROR IN FINDONE:", err);
 
-  return res.status(500).send({
-    message: err.message || "Error retrieving User with email=" + req.body.email,
-  });
-}
+    return res.status(500).send({
+      message:
+        err.message || "Error retrieving User with email=" + req.body.email,
+    });
+  }
 };
 
 // Retrieve all Users from the database.
@@ -101,7 +102,10 @@ exports.findAll = async (req, res) => {
   var condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
 
   try {
-    const data = await User.findAll({ where: condition });
+    const data = await User.findAll({
+      where: condition,
+      attributes: ["id", "email", "firstName", "lastName", "isAdmin"],
+    });
     res.send(data);
   } catch (err) {
     res.status(500).send({
@@ -115,7 +119,9 @@ exports.findOne = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const data = await User.findByPk(id);
+    const data = await User.findByPk(id, {
+      attributes: ["id", "email", "firstName", "lastName", "isAdmin"],
+    });
     if (data) {
       res.send(data);
     } else {
