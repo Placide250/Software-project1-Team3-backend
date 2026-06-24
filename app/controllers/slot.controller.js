@@ -6,6 +6,10 @@ const {
 const db = require("../models");
 const { nthDate, combineDateAndTime } = require("../utils/dateUtils");
 const { httpError } = require("../utils/httpUtils");
+const {
+  sendSlotUpdatedEmail,
+  sendSlotCancelledEmail,
+} = require("../utils/email.service.js");
 const Slot = db.slot;
 const Order = db.order;
 const Ticket = db.ticket;
@@ -295,22 +299,136 @@ exports.findAllByEvent = async (req, res) => {
   }
 };
 
+/**
+ * Look up everything we need to email customers about a slot: the event name,
+ * and one row per non-cancelled Order tied to this slot (via Ticket) with the
+ * recipient's email/name and the seats they booked.
+ *
+ * Order does not have a slotId column directly -- the link is
+ * Order -> Ticket -> Slot, so we find tickets for this slot first, then group
+ * by their (non-cancelled) order.
+ */
+async function getNotifiableOrdersForSlot(slotId) {
+  const slot = await Slot.findByPk(slotId, {
+    include: [
+      {
+        model: Event,
+        as: "event",
+        required: false,
+      },
+    ],
+  });
+
+  if (!slot) return { slot: null, eventName: null, recipients: [] };
+
+  const tickets = await Ticket.findAll({
+    where: { slotId: slotId },
+    include: [
+      {
+        model: Order,
+        as: "order",
+        required: true,
+        where: { isCancelled: false },
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "email", "firstName"],
+            required: false,
+          },
+        ],
+      },
+    ],
+  });
+
+  // group tickets by orderId so each customer gets one email listing all their seats
+  const orderMap = new Map();
+  for (const ticket of tickets) {
+    const order = ticket.order;
+    if (!order) continue;
+
+    if (!orderMap.has(order.id)) {
+      orderMap.set(order.id, {
+        order,
+        seats: [],
+      });
+    }
+    orderMap.get(order.id).seats.push(ticket);
+  }
+
+  const recipients = [];
+  for (const { order, seats } of orderMap.values()) {
+    const email = order.guestEmail || order.user?.email;
+    if (!email) continue; // nothing we can do without an address
+
+    const name = order.user?.firstName || "Guest";
+    recipients.push({
+      email,
+      name,
+      orderId: order.id,
+      seats,
+    });
+  }
+
+  return {
+    slot,
+    eventName: slot.event?.name || "your upcoming event",
+    recipients,
+  };
+}
+
 // Update a slot by the id in the request
 exports.update = async (req, res) => {
   const id = req.params.id;
   try {
-    const number = await Slot.update(req.body, {
-      where: { id: id },
-    });
-    if (number == 1) {
-      res.send({
-        message: "Slot was updated successfully.",
-      });
-    } else {
-      res.send({
+    const existingSlot = await Slot.findByPk(id);
+    if (!existingSlot) {
+      return res.send({
         message: `Cannot update slot with id=${id}. Maybe slot was not found or req.body is empty!`,
       });
     }
+
+    const oldDatetime = existingSlot.datetime;
+    const newDatetime = req.body.datetime
+      ? new Date(req.body.datetime)
+      : oldDatetime;
+    const datetimeChanged =
+      req.body.datetime && new Date(oldDatetime).getTime() !== newDatetime.getTime();
+
+    const [number] = await Slot.update(req.body, {
+      where: { id: id },
+    });
+
+    if (number != 1) {
+      return res.send({
+        message: `Cannot update slot with id=${id}. Maybe slot was not found or req.body is empty!`,
+      });
+    }
+
+    // notify customers only if the date/time actually changed
+    if (datetimeChanged) {
+      try {
+        const { eventName, recipients } = await getNotifiableOrdersForSlot(id);
+        for (const recipient of recipients) {
+          await sendSlotUpdatedEmail(recipient.email, recipient.name, {
+            eventName,
+            oldDatetime,
+            newDatetime,
+            seats: recipient.seats,
+            orderId: recipient.orderId,
+          });
+        }
+      } catch (emailErr) {
+        console.error(
+          "Slot update email sending failed (non-fatal):",
+          emailErr.message,
+        );
+      }
+    }
+
+    res.send({
+      message: "Slot was updated successfully.",
+    });
   } catch (err) {
     if (err.name === "SequelizeUniqueConstraintError") {
       return res.status(409).json({
@@ -328,10 +446,54 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   const id = req.params.id;
   try {
+    const existingSlot = await Slot.findByPk(id);
+    if (!existingSlot) {
+      return res.send({
+        message: `Cannot delete slot with id=${id}. Maybe slot was not found!`,
+      });
+    }
+
+    // gather who needs to be notified + cancel their orders before the slot is gone
+    const { eventName, recipients } = await getNotifiableOrdersForSlot(id);
+    const slotDatetime = existingSlot.datetime;
+
+    // Order has no slotId column -- cancel every order that has at least one
+    // ticket on this slot (the recipients we already collected give us the
+    // exact set of order ids to cancel).
+    const orderIdsToCancel = recipients.map((r) => r.orderId);
+    if (orderIdsToCancel.length > 0) {
+      await Order.update(
+        { isCancelled: true },
+        {
+          where: {
+            id: { [Op.in]: orderIdsToCancel },
+            isCancelled: false,
+          },
+        },
+      );
+    }
+
     const number = await Slot.destroy({
       where: { id: id },
     });
+
     if (number == 1) {
+      try {
+        for (const recipient of recipients) {
+          await sendSlotCancelledEmail(recipient.email, recipient.name, {
+            eventName,
+            slotDatetime,
+            seats: recipient.seats,
+            orderId: recipient.orderId,
+          });
+        }
+      } catch (emailErr) {
+        console.error(
+          "Slot cancellation email sending failed (non-fatal):",
+          emailErr.message,
+        );
+      }
+
       res.send({
         message: "Slot was deleted successfully!",
       });
