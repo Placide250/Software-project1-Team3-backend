@@ -127,9 +127,58 @@ authenticateRoute = async (req, res, next) => {
   }
 };
 
+adminRoute = async (req, res, next) => {
+  let auth = req.get("authorization");
+  console.log(auth);
+  if (auth != null) {
+    if (
+      auth.startsWith("Bearer ") &&
+      (typeof require !== "string" || require === "token")
+    ) {
+      let token = auth.slice(7);
+      let sessionId = await decrypt(token);
+      let session;
+      try {
+        const data = await Session.findAll({ where: { id: sessionId } });
+        session = data[0];
+      } catch (error) {
+        console.log(error);
+      }
+      if (session != null) {
+        console.log(session >= Date.now());
+        console.log(Date.now());
+        if (session.expirationDate >= Date.now()) {
+          const user = await User.findByPk(session.userId);
+          if (user.isAdmin) {
+            next();
+            return;
+          } else {
+            return res.status(401).send({
+              message: "Unauthorized! Must be admin",
+            });
+          }
+        } else {
+          return res.status(401).send({
+            message: "Unauthorized! Expired Token, Logout and Login again",
+          });
+        }
+      } else {
+        return res.status(401).send({
+          message: "Unauthorized! Expired Token, Logout and Login again",
+        });
+      }
+    }
+  } else {
+    return res.status(401).send({
+      message: "Unauthorized! No Auth Header",
+    });
+  }
+};
+
 const auth = {
   authenticate: authenticate,
   authenticateRoute: authenticateRoute,
+  adminRoute: adminRoute,
 };
 
 module.exports = auth;

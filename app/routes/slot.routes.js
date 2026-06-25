@@ -1,6 +1,6 @@
 module.exports = (app) => {
   const Slot = require("../controllers/slot.controller.js");
-  const { authenticateRoute } = require("../authentication/authentication.js");
+  const { adminRoute } = require("../authentication/authentication.js");
   var router = require("express").Router();
 
   // Retrieve a single Slot with id
@@ -16,19 +16,19 @@ module.exports = (app) => {
   router.get("/events/:eventId/slots", Slot.findAllByEvent);
 
   // Create a new Slot for an event
-  router.post("/events/:eventId/slots", Slot.create);
+  router.post("/events/:eventId/slots", [adminRoute], Slot.create);
 
   // Create new recurring slots in date range
-  router.post("/events/:eventId/slots/recurring", Slot.createRecurring);
+  router.post("/events/:eventId/slots/recurring", [adminRoute], Slot.createRecurring);
 
   // Update a Slot with id
-  router.put("/slots/:id", Slot.update);
+  router.put("/slots/:id", [adminRoute], Slot.update);
 
   // Delete a slot with id
-  router.delete("/slots/:id", Slot.delete);
+  router.delete("/slots/:id", [adminRoute], Slot.delete);
 
   // Delete all slots
-  router.delete("/slots/", Slot.deleteAll);
+  router.delete("/slots/", [adminRoute], Slot.deleteAll);
 
   app.use("/planetapi", router);
 };
